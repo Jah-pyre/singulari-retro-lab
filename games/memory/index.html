@@ -1,0 +1,48 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Memory Matrix — Protocol Singulari Retro Lab</title>
+<style>
+ body{margin:0;font-family:monospace;background:#0d1117;color:#e6edf3;display:flex;
+ flex-direction:column;align-items:center;min-height:100vh}
+ h1{letter-spacing:.2em;font-weight:400;color:#ffd60a}
+ #grid{display:grid;grid-template-columns:repeat(4,84px);gap:10px;margin:28px 0}
+ .cell{width:84px;height:84px;background:#21262d;border:1px solid #30363d;
+ border-radius:10px;cursor:pointer}
+ .lit{background:#3fb950;border-color:#56d364}
+ #msg{min-height:1.6em;color:#8b949e}#score{color:#8b949e;margin-top:16px}
+</style></head><body>
+<h1>MEMORY MATRIX</h1><div id="grid"></div>
+<div id="msg">watch the pattern</div><div id="score">level: <span id="lvl">1</span></div>
+<script>
+"use strict";
+var S=4,N=6,grid=document.getElementById("grid"),pattern=[],turn=0,level=1,locking=true;
+function mk(){ grid.innerHTML="";
+ for(var i=0;i<N;i++){ var c=document.createElement("div"); c.className="cell";
+  c.dataset.i=i; c.onclick=onclickCell; grid.appendChild(c); } }
+function step(){ if(turn<pattern.length) cycle(); else { locking=true;
+  nextLevel(); } }
+function cycle(){ var cell=grid.children[pattern[turn]];
+ cell.style.background="#ffd60a";
+ setTimeout(function(){ cell.style.background="";
+  turn++; if(turn>=pattern.length){ locking=false;
+   document.getElementById("msg").textContent="your turn"; }
+  else setTimeout(cycle,250); },500); }
+function nextLevel(){ pattern.push(Math.floor(Math.random()*N));
+ turn=0; locking=false; document.getElementById("msg").textContent="watch";
+ var idx=0; (function flash(){ var cell=grid.children[pattern[idx]];
+  cell.style.background="#ffd60a"; setTimeout(function(){ cell.style.background="";
+   idx++; if(idx<pattern.length) setTimeout(flash,300);
+   else setTimeout(function(){ locking=false;
+    document.getElementById("msg").textContent="your turn"; },250); },450); })(); }
+function onclickCell(){ if(locking) return;
+ var i=+this.dataset.i;
+ if(i===pattern[turn]){ this.style.background="#3fb950";
+  setTimeout(function(){ grid.children[i].style.background=""; },200);
+  turn++; if(turn===pattern.length){ document.getElementById("lvl").textContent=++level;
+   setTimeout(nextLevel,600); } }
+ else { this.style.background="#f85149";
+  setTimeout(function(){ grid.children[i].style.background=""; },250);
+  document.getElementById("msg").textContent="game over at level "+level; locking=true; } }
+mk(); nextLevel();
+</script></body></html>

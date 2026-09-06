@@ -1,0 +1,72 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Math24 Arcade — Protocol Singulari Retro Lab</title>
+<style>
+ body{margin:0;font-family:monospace;background:#101418;color:#d8f3dc;display:flex;
+ flex-direction:column;align-items:center;min-height:100vh}
+ h1{letter-spacing:.25em;font-weight:400}.gold{color:#ffd60a}
+ #expr{font-size:2.6em;margin:40px 0 24px}
+ button{font-size:1.3em;margin:6px;padding:12px 20px;background:#24292f;color:#fff;
+ border:1px solid #3a4450;border-radius:10px;cursor:pointer}
+ button:hover{border-color:#ffd60a;color:#ffd60a}
+ #disp{min-height:2em;color:#8d99ae;font-size:1.4em}
+ #msg{min-height:1.6em;color:#56d364}#stats{color:#8d99ae;margin-top:24px}
+</style></head><body>
+<h1>// <span class="gold">MATH24</span> ARCADE</h1>
+<div id="expr"></div>
+<div><button data-o="-">-</button><button data-o="+">+</button>
+<button data-o="*">*</button><button data-o="/">/</button></div>
+<div id="disp"></div><div id="msg"></div>
+<div id="stats">score: <span id="score">0</span></div>
+<script>
+"use strict";
+var NSEED = 4;
+function rnd(n){ return Math.floor(Math.random()*n); }
+function perm(a){ var r=[]; if(a.length<2) return [a.slice()];
+ for(var i=0;i<a.length;i++){ var rest=a.slice(0,i).concat(a.slice(i+1));
+ var p=perm(rest); for(var j=0;j<p.length;j++) r.push([a[i]].concat(p[j])); }
+ return r; }
+var OPS=["+","-","*","/"];
+function exprs(c){ var r=[],P=perm(c);
+ for(var x=0;x<P.length;x++){ var p=P[x];
+ for(var o1=0;o1<4;o1++)for(var o2=0;o2<4;o2++)for(var o3=0;o3<4;o3++)
+  r.push([p[0],OPS[o1],p[1],OPS[o2],p[2],OPS[o3],p[3]]);
+ } return r; }
+function evalExpr(t){ var s=[],q=[],op={};op["+"]=1;op["-"]=1;op["*"]=2;op["/"]=2;
+ function apply(){ var a=+s.pop(),b=+s.pop(),o=q.pop(); var v;
+  if(o==="+")v=a+b;else if(o==="-")v=a-b;else if(o==="*")v=a*b;else v=a/b;
+  s.push(v); }
+ for(var i=0;i<t.length;i++){ var x=t[i];
+  if(x==="+"||x==="-"||x==="*"||x==="/"){ while(q.length&&op[q[q.length-1]]>=op[x])apply(); q.push(x); }
+  else s.push(+x); }
+ while(q.length)apply(); return s[0]; }
+function bestCards(){
+ for(var t=0;t<40;t++){ var c=[0,0,0,0];
+  for(var i=0;i<4;i++) c[i]=rnd(NSEED)+1;
+  var E=exprs(c);
+  for(var e=0;e<E.length;e++){ var v=evalExpr(E[e]);
+   if(v>23.9999&&v<24.0001){ return E[e]; } } }
+ return [1,2,3,4]; }
+var score=0,expr=new bestCards();
+document.getElementById("expr").textContent="a=1 b="+expr.join("  ");
+function show(){ document.getElementById("expr").textContent=expr.join(" "); }
+show();
+var disp=document.getElementById("disp"),msg=document.getElementById("msg"),cur=[];
+document.querySelectorAll("button").forEach(function(b){
+ b.onclick=function(){ var o=b.getAttribute("data-o");
+  cur.push(o);
+  if(cur.length+expr.length===expr.length+2 && cur.length%2===0){
+   document.getElementById("disp").textContent=cur.join(" ");
+  }
+  var test=expr.concat(cur);
+  if(test.length===expr.length+3){
+   try{ var v=evalExpr(test); cur=[];
+    if(v>23.9999&&v<24.0001){ score++; document.getElementById("score").textContent=score;
+     msg.textContent="SOLVED! ("+v+")"; }
+    else msg.textContent="miss ("+v.toFixed(2)+")";
+    expr=new bestCards(); show(); document.getElementById("disp").textContent="";
+   }catch(err){ cur=[]; msg.textContent="bad division"; expr=new bestCards(); show(); }
+  } else document.getElementById("disp").textContent=cur.join(" ");
+ };});
+</script></body></html>

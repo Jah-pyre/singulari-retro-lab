@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simon Logic — Protocol Singulari Retro Lab</title>
+<style>
+ body{margin:0;font-family:monospace;background:#101418;color:#fff;display:flex;
+ flex-direction:column;align-items:center;min-height:100vh}
+ h1{letter-spacing:.2em;font-weight:400;color:#ffd60a}
+ #board{position:relative;width:220px;height:220px;margin:26px 0}
+ .q{position:absolute;width:100px;height:100px;border-radius:8px;opacity:.55;cursor:pointer}
+ .q.on{opacity:1;box-shadow:0 0 24px 6px currentColor}
+ #red{background:#f85149;top:0;left:0}#blue{background:#58a6ff;top:0;left:115px}
+ #green{background:#3fb950;top:115px;left:0}#yellow{background:#d29922;top:115px;left:115px}
+ #msg{min-height:1.6em;color:#8b949e}#score{color:#8b949e;margin-top:16px}
+</style></head><body>
+<h1>SIMON LOGIC</h1><div id="board">
+ <div class="q" id="red"></div><div class="q" id="blue"></div>
+ <div class="q" id="green"></div><div class="q" id="yellow"></div>
+</div>
+<div id="msg">watch the sequence</div><div id="score">round: <span id="round">1</span></div>
+<script>
+"use strict";
+var ids=["red","blue","green","yellow"],seq=[],turn=0,locking=true,round=1;
+var sound={red:270,blue:330,green:390,yellow:440};
+function play(id){ var el=document.getElementById(id); el.classList.add("on");
+ setTimeout(function(){ el.classList.remove("on"); },450); }
+function nextSeq(){ seq.push(Math.floor(Math.random()*4)); turn=0; locking=true;
+ document.getElementById("msg").textContent="watch";
+ var i=0;(function flash(){ play(ids[seq[i]]); i++;
+  if(i<seq.length) setTimeout(flash,650);
+  else setTimeout(function(){ locking=false;
+   document.getElementById("msg").textContent="your turn"; },700); })(); }
+document.querySelectorAll(".q").forEach(function(el){
+ el.onclick=function(){ if(locking) return; play(el.id);
+  if(ids[seq[turn]]===el.id){ turn++;
+   if(turn===seq.length){ document.getElementById("round").textContent=++round;
+    setTimeout(nextSeq,600); } }
+  else { locking=true; document.getElementById("msg").textContent=
+   "breach on "+el.id+" at round "+round; } };});
+nextSeq();
+</script></body></html>

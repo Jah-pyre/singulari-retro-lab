@@ -1,0 +1,44 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Piston Dodger — Protocol Singulari Retro Lab</title>
+<style>
+ body{margin:0;font-family:monospace;background:#0d1117;color:#e6edf3;display:flex;
+ flex-direction:column;align-items:center;min-height:100vh}
+ h1{letter-spacing:.2em;font-weight:400;color:#ffd60a}
+ canvas{background:#161b22;border:1px solid #30363d;border-radius:10px;margin:20px 0}
+ #msg{color:#8b949e;min-height:1.4em}
+</style></head><body>
+<h1>PISTON DODGER</h1>
+<canvas id="c" width="360" height="480"></canvas>
+<div id="msg">arrow keys / A-D to dodge the pistons</div>
+<script>
+"use strict";
+var cv=document.getElementById("c"),ctx=cv.getContext("2d"),W=360,H=480;
+var px=W/2-15,py=H-60,pw=30,ph=30,dead=false,score=0;
+var pipes=[],keys={},t0=performance.now(),spawn=0;
+document.addEventListener("keydown",function(e){ keys[e.key.toLowerCase()]=true; });
+document.addEventListener("keyup",function(e){ keys[e.key.toLowerCase()]=false; });
+function gameOver(){ dead=true; document.getElementById("msg").textContent=
+ "piston breach — score "+score; }
+function frame(now){ var dt=(now-t0)/1000; t0=now; if(dt>0.05)dt=0.05;
+ ctx.clearRect(0,0,W,H);
+ spawn-=dt; if(spawn<=0 && pipes.length<3){ var gap=95+Math.random()*90,top=Math.random()*(H-140);
+  pipes.push({x:W,y:(H-gap)/2,gap:gap,col:"#f85149"}); spawn=1.1; }
+ pipes.forEach(function(p){ p.x-=(90+score*4)*dt;
+  ctx.fillStyle=p.col; ctx.fillRect(p.x,0,26,p.y-gap2(p,0));
+  var g2=p.y-p.gap/2; ctx.fillRect(p.x,g2+p.gap,26,H-g2-p.gap); });
+ pipes=pipes.filter(function(p){ return p.x>-26; });
+ function gap2(p,_){ return p.y-p.gap/2; }
+ if(keys["arrowleft"]||keys["a"]) px-=(220*dt);
+ if(keys["arrowright"]||keys["d"]) px+=(220*dt);
+ px=Math.max(0,Math.min(W-pw,px));
+ ctx.fillStyle="#58a6ff"; ctx.fillRect(px,py,pw,ph);
+ pipes.forEach(function(p){ var g=p.y-p.gap/2,hg=H-(g+p.gap);
+  if(px+pw>p.x && px<p.x+26){
+   if(py<g || py+ph>g+p.gap) gameOver(); } });
+ if(!dead) score+=dt;
+ ctx.fillStyle="#8b949e"; ctx.fillText("score "+Math.floor(score),10,20);
+ if(!dead) requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+</script></body></html>
